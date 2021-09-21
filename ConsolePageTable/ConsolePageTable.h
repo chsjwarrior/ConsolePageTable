@@ -67,13 +67,13 @@ private:
 
 public:
 	Table() = delete;
-	explicit Table(const std::string& title, size_t rowCount, size_t columnCount, HeaderOrientation headerOrientation = HeaderOrientation::NONE)
+	explicit Table(const std::string& title, const size_t rowCount, const size_t columnCount, HeaderOrientation headerOrientation = HeaderOrientation::NONE)
 		: headerOrientation(headerOrientation), title(title), columnsForPage(4) {
 		setRowCount(rowCount);
 		setColumnCount(columnCount);
 	}
-	explicit Table(const std::string& title, HeaderOrientation headerOrientation = HeaderOrientation::NONE) : Table("", 0, 0, headerOrientation) {}
-	explicit Table(size_t rowCount, size_t columnCount) : Table("", rowCount, columnCount) {}
+	explicit Table(const std::string& title, const HeaderOrientation headerOrientation = HeaderOrientation::NONE) : Table("", 0, 0, headerOrientation) {}
+	explicit Table(const size_t rowCount, const size_t columnCount) : Table("", rowCount, columnCount) {}
 
 	void addHeader(const std::initializer_list<std::string>& header) {
 		if (headerOrientation == HeaderOrientation::NONE)
@@ -93,33 +93,10 @@ public:
 		for (auto& value : header) {
 			this->header[oldCount + i] = value;
 			if (headerOrientation == HeaderOrientation::COLUMN)
-				updateColumnWidth(i + 1, value.size());
+				updateColumnWidth(i + 1, value.size(), true);
 			else if (headerOrientation == HeaderOrientation::ROW)
-				updateColumnWidth(0, value.size());
+				updateColumnWidth(0, value.size(), true);
 			++i;
-		}
-	}
-
-	void addHeader(const std::string header[], const size_t size) {
-		if (headerOrientation == HeaderOrientation::NONE)
-			return;
-
-		size_t i = 0;
-		if (headerOrientation == HeaderOrientation::COLUMN) {
-			i = getColumnCount();
-			setColumnCount(i + size);
-		} else if (headerOrientation == HeaderOrientation::ROW) {
-			i = getRowCount();
-			setRowCount(i + size);
-		}
-
-		const size_t oldCount = i;
-		for (i = 0; i < size; ++i) {
-			this->header[oldCount + i] = header[i];
-			if (headerOrientation == HeaderOrientation::COLUMN)
-				updateColumnWidth(i + 1, header[i].size());
-			else if (headerOrientation == HeaderOrientation::ROW)
-				updateColumnWidth(0, header[i].size());
 		}
 	}
 
@@ -134,12 +111,12 @@ public:
 
 		header.back() = value;
 		if (headerOrientation == HeaderOrientation::COLUMN)
-			updateColumnWidth(getColumnCount(), value.size());
+			updateColumnWidth(getColumnCount(), value.size(), true);
 		else if (headerOrientation == HeaderOrientation::ROW)
-			updateColumnWidth(0, value.size());
+			updateColumnWidth(0, value.size(), true);
 	}
 
-	void updateHeaderAt(size_t index, const std::string& value) {
+	void updateHeaderAt(const size_t index, const std::string& value) {
 		if (headerOrientation == HeaderOrientation::COLUMN) {
 			if (index < getColumnCount())
 				return;
@@ -177,7 +154,7 @@ public:
 	}
 
 	template<typename T>
-	void updateValueAt(size_t row, size_t column, T value) requires std::integral<T> || std::floating_point<T> || std::same_as<T, const char*> {
+	void updateValueAt(const size_t row, const size_t column, const T value) requires std::integral<T> || std::floating_point<T> || std::same_as<T, const char*> {
 		if (row < getRowCount() && column < getColumnCount()) {
 			*data.at(row)->at(column) = value;
 			updateColumnWidth(column + 1, data.at(row)->at(column)->text.size());
@@ -241,19 +218,19 @@ public:
 		}
 	}
 
-	void setColumnWidth(size_t index, size_t width) {
+	void setColumnWidth(size_t index, const size_t width) {
 		if (index < getColumnCount()) {
-			columnsWidth[index + 1]->first = width;
-			columnsWidth[index + 1]->second = true;
+			columnsWidth[++index]->first = width;
+			columnsWidth[index]->second = true;
 		}
 	}
 
 	void setColumnAutoWidth(size_t index) {
 		if (index < getColumnCount()) {
-			columnsWidth[index + 1]->second = false;
-			columnsWidth[index + 1]->first = headerOrientation == HeaderOrientation::COLUMN ? header[index].size() : 0;
+			columnsWidth[++index]->second = false;
+			columnsWidth[index]->first = headerOrientation == HeaderOrientation::COLUMN ? header[index].size() : 0;
 			for (auto& row : data)
-				columnsWidth[index + 1]->first = std::max(columnsWidth[index + 1]->first, row->at(index)->text.size());
+				columnsWidth[index]->first = std::max(columnsWidth[index]->first, row->at(index)->text.size());
 		}
 	}
 
@@ -347,13 +324,16 @@ public:
 	}
 
 private:
-	void updateColumnWidth(size_t index, size_t width) {
-		if (index <= columnsWidth.size())
-			if (columnsWidth[index]->second == false)
+	void updateColumnWidth(const size_t index, const size_t width, const bool force = false) {
+		if (index <= columnsWidth.size()) {
+			if (force == true)
+				columnsWidth[index]->first = width;
+			else if (columnsWidth[index]->second == false)
 				columnsWidth[index]->first = std::max(columnsWidth[index]->first, width);
+		}
 	}
 
-	void repeat(unsigned char caracter, size_t times) const {
+	void repeat(const unsigned char caracter, const size_t times) const {
 		for (size_t i = 0; i < times; ++i)
 			std::cout << caracter;
 	}
