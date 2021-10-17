@@ -1,18 +1,17 @@
 #include "ConsolePageTable.h"
 
 int main() {
-	Table table("Console Page Table", 0, 0);
-	table.setHeaderOrientation(Table::HeaderOrientation::COLUMN);
+	Table table(0, 0);
+	table.setHeaderOrientation(Table::HeaderOrientation::ROW);
 
-	//table.addHeader({"codigo","descricao","quantidade","valor", "disponivel"});
-	/*
-	table.updateValueAt(0, 0, 1);
-	table.updateValueAt(0, 1, "Computer");
-	table.updateValueAt(0, 2, '1');
-	table.updateValueAt(0, 3, 10000.00);
-	table.updateValueAt(0, 4, true);
-	*/
-
+	table.addHeader({"Vi","Di","Pi"});
+	
+	table.addColumn({"1", "0", "nil"});
+	table.addColumn({"2", "1", "1"});
+	table.addColumn({"3", "2", "2"});
+	table.addColumn({"4", "3", "3"});
+	table.addColumn({"5", "4", "2"});
+	
 	table.print();
 
 	return 0;
