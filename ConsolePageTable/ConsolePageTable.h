@@ -4,7 +4,7 @@
 #include <memory>
 #include <iostream>
 
-class Table {
+class PageTable {
 public:
 	enum class HeaderOrientation { COLUMN, ROW, NONE };
 
@@ -66,14 +66,14 @@ private:
 	std::vector<std::unique_ptr<std::vector<std::unique_ptr<Cell>>>> data;
 
 public:
-	Table() = delete;
-	explicit Table(const std::string& title, const size_t rowCount, const size_t columnCount, HeaderOrientation headerOrientation = HeaderOrientation::NONE)
+	PageTable() = delete;
+	explicit PageTable(const std::string& title, const size_t rowCount, const size_t columnCount, HeaderOrientation headerOrientation = HeaderOrientation::NONE)
 		: headerOrientation(headerOrientation), title(title), columnsForPage(4) {
 		setRowCount(rowCount);
 		setColumnCount(columnCount);
 	}
-	explicit Table(const std::string& title, const HeaderOrientation headerOrientation = HeaderOrientation::NONE) : Table("", 0, 0, headerOrientation) {}
-	explicit Table(const size_t rowCount, const size_t columnCount) : Table("", rowCount, columnCount) {}
+	explicit PageTable(const std::string& title, const HeaderOrientation headerOrientation = HeaderOrientation::NONE) : PageTable("", 0, 0, headerOrientation) {}
+	explicit PageTable(const size_t rowCount, const size_t columnCount) : PageTable("", rowCount, columnCount) {}
 
 	void addHeader(const std::initializer_list<std::string>& header) {
 		if (headerOrientation == HeaderOrientation::NONE)
@@ -154,7 +154,7 @@ public:
 	}
 
 	template<typename T>
-	void updateValueAt(const size_t row, const size_t column, const T value) requires std::integral<T> || std::floating_point<T> || std::same_as<T, const char*> {
+	void updateValueAt(const size_t row, const size_t column, const T value) requires std::integral<T> || std::floating_point<T> || std::same_as<T, const char*> || std::same_as<T, std::string> {
 		if (row < getRowCount() && column < getColumnCount()) {
 			*data.at(row)->at(column) = value;
 			updateColumnWidth(column + 1, data.at(row)->at(column)->text.size());
@@ -218,7 +218,7 @@ public:
 		}
 	}
 
-	void setColumnWidth(size_t index, const size_t width) {
+	void setColumnMaxWidth(size_t index, const size_t width) {
 		if (index < getColumnCount()) {
 			columnsWidth[++index]->first = width;
 			columnsWidth[index]->second = true;
