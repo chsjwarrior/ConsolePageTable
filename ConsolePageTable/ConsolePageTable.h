@@ -144,11 +144,31 @@ public:
 	}
 
 	template<typename T>
+	void addRow(const T row[], const size_t size) requires std::integral<T> || std::floating_point<T> || std::same_as<T, const char*> || std::same_as<T, std::string> {
+		setRowCount(getRowCount() + 1);
+		const size_t columnCount = std::min(getColumnCount(), size);
+		for (size_t i = 0; i < columnCount; ++i) {
+			*data.back()->at(i) = row[i];
+			updateColumnWidth(i + 1, data.back()->at(i)->text.size());
+		}
+	}
+
+	template<typename T>
 	void addColumn(const std::initializer_list<T>& column) requires std::integral<T> || std::floating_point<T> || std::same_as<T, const char*> {
 		setColumnCount(getColumnCount() + 1);
 		const size_t rowCount = std::min(getRowCount(), column.size());
 		for (size_t i = 0; i < rowCount; ++i) {
 			*data.at(i)->back() = *(column.begin() + i);
+			updateColumnWidth(getColumnCount(), data.at(i)->back()->text.size());
+		}
+	}
+
+	template<typename T>
+	void addColumn(const T column[], const size_t size)  requires std::integral<T> || std::floating_point<T> || std::same_as<T, const char*> || std::same_as<T, std::string> {
+		setColumnCount(getColumnCount() + 1);
+		const size_t rowCount = std::min(getRowCount(), size);
+		for (size_t i = 0; i < rowCount; ++i) {
+			*data.at(i)->back() = column[i];
 			updateColumnWidth(getColumnCount(), data.at(i)->back()->text.size());
 		}
 	}
