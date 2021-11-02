@@ -118,10 +118,10 @@ public:
 
 	void updateHeaderAt(const size_t index, const std::string& value) {
 		if (headerOrientation == HeaderOrientation::COLUMN) {
-			if (index < getColumnCount())
+			if (index >= getColumnCount())
 				return;
 		} else if (headerOrientation == HeaderOrientation::ROW) {
-			if (index < getRowCount())
+			if (index >= getRowCount())
 				return;
 		} else if (headerOrientation == HeaderOrientation::NONE)
 			return;
@@ -235,9 +235,11 @@ public:
 	}
 
 	void print() {
-		const unsigned short lenght = static_cast<unsigned short>(ceilf(static_cast<float>(getColumnCount()) / columnsForPage));
-		for (unsigned short i = 0; i < lenght; ++i)
-			printPage(i);
+		if (getRowCount() + getColumnCount() > 1) {
+			const unsigned short lenght = static_cast<unsigned short>(ceilf(static_cast<float>(getColumnCount()) / columnsForPage));
+			for (unsigned short i = 0; i < lenght; ++i)
+				printPage(i);
+		}
 	}
 
 	const HeaderOrientation getHeaderOrientation() const { return headerOrientation; }
@@ -260,7 +262,7 @@ public:
 	}
 
 private:
-	inline void updateColumnWidth(const size_t index, const size_t width, const bool force = false) {
+	void updateColumnWidth(const size_t index, const size_t width, const bool force = false) {
 		if (columnsWidth[index]->second == false)
 			if (force)
 				columnsWidth[index]->first = width;
@@ -273,19 +275,23 @@ private:
 			std::cout << caracter;
 	}
 
-	inline void printLine(const size_t begin, const size_t end, const size_t tableWidth, const Line line) const {
+	void printLine(const size_t begin, const size_t end, const Line line) const {
 		std::cout << line.left;
-		if (begin != end)
-			for (size_t i = begin; i < end; ++i) {
-				repeat(border.horizontal, columnsWidth[i + 1]->first);
-				if (i < end - 1)
-					std::cout << line.middle;
-			} else
-				repeat(border.horizontal, tableWidth);
-			std::cout << line.right << std::endl;
+		if (headerOrientation == HeaderOrientation::ROW) {
+			repeat(border.horizontal, columnsWidth.front()->first);
+			std::cout << line.middle;
+		}
+		//if (begin != end)
+		for (size_t i = begin; i < end; ++i) {
+			repeat(border.horizontal, columnsWidth[i + 1]->first);
+			if (i < end - 1)
+				std::cout << line.middle;
+		}// else
+			//repeat(border.horizontal, tableWidth);
+		std::cout << line.right << std::endl;
 	}
 
-	inline void printText(const std::string& text, const size_t width) const {
+	void printText(const std::string& text, const size_t width) const {
 		if (text.empty())
 			repeat(32, width);
 		else if (text.size() < width) {
@@ -301,24 +307,20 @@ private:
 		const size_t columnCount = columnEnd - columnBegin;
 
 		size_t tableWidth = columnsWidth.front()->first;
-		if (columnCount > 0)
-			tableWidth += columnCount - 1;
+		tableWidth += headerOrientation == HeaderOrientation::ROW ? columnCount : columnCount - 1;
 		for (size_t i = columnBegin; i < columnEnd; ++i)
 			tableWidth += columnsWidth[i + 1]->first;
 
 		if (!title.empty() && page == 0) {
 			if (title.size() > tableWidth) {
-				if (columnCount > 0) {
-					size_t value = title.size() / columnCount;
-					tableWidth = columnCount - 1;
-					for (size_t i = columnBegin; i < columnEnd; ++i) {
-						columnsWidth[i + 1]->first = value;
-						tableWidth += value;
-					}
-				} else
-					tableWidth = title.size();
+				tableWidth = columnsWidth.front()->first;
+				size_t value = (title.size() - tableWidth) / columnCount;
+				tableWidth += headerOrientation == HeaderOrientation::ROW ? columnCount : columnCount - 1;
+				for (size_t i = columnBegin; i < columnEnd; ++i) {
+					columnsWidth[i + 1]->first = value;
+					tableWidth += value;
+				}
 			}
-
 			std::cout << border.top.left;
 			repeat(border.horizontal, tableWidth);
 			std::cout << border.top.right << std::endl;
@@ -327,9 +329,9 @@ private:
 			printText(title, tableWidth);
 			std::cout << border.vertical << std::endl;
 
-			printLine(columnBegin, columnEnd, tableWidth, {border.middle.left, border.top.middle, border.middle.right});
+			printLine(columnBegin, columnEnd, {border.middle.left, border.top.middle, border.middle.right});
 		} else
-			printLine(columnBegin, columnEnd, tableWidth, border.top);
+			printLine(columnBegin, columnEnd, border.top);
 
 		if (headerOrientation == HeaderOrientation::COLUMN) {
 			for (size_t i = columnBegin; i < columnEnd; ++i) {
@@ -338,8 +340,7 @@ private:
 				if (i == columnEnd - 1)
 					std::cout << border.vertical << std::endl;
 			}
-
-			printLine(columnBegin, columnEnd, tableWidth, border.middle);
+			printLine(columnBegin, columnEnd, border.middle);
 		}
 
 		for (size_t r = 0; r < getRowCount(); ++r) {
@@ -356,10 +357,10 @@ private:
 			std::cout << border.vertical << std::endl;
 
 			if (r < getRowCount() - 1)
-				printLine(columnBegin, columnEnd, tableWidth, border.middle);
+				printLine(columnBegin, columnEnd, border.middle);
 		}
 
-		printLine(columnBegin, columnEnd, tableWidth, border.botton);
+		printLine(columnBegin, columnEnd, border.botton);
 		std::cout << std::endl;
 	}
 };

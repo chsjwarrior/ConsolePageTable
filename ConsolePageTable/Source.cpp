@@ -1,8 +1,8 @@
 #include "ConsolePageTable.h"
 
 int main() {
-	Table table(1, 0);
-	table.setHeaderOrientation(Table::HeaderOrientation::COLUMN);
+	Table table("01234567890123456789", 1, 3);
+	table.setHeaderOrientation(Table::HeaderOrientation::NONE);
 
 	//table.addHeader({"Vi","Di","Pi"});
 
