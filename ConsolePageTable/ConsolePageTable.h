@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <memory>
 #include <iostream>
 
 class PageTable {
@@ -46,34 +45,42 @@ private:
 			return *this;
 		}
 
+		const Cell& operator=(const bool& value) {
+			text = value ? "true" : "false";
+			return *this;
+		}
+
 		template<typename T>
 		const Cell& operator=(const T& value) requires std::integral<T> || std::floating_point<T> {
 			text = std::to_string(value);
 			return *this;
 		}
-
-		const Cell& operator=(const bool& value) {
-			text = value ? "true" : "false";
-			return *this;
-		}
 	};
 
 	HeaderOrientation headerOrientation;
-	std::string title;
 	unsigned short columnsForPage;
+	std::string title;
 	std::vector<std::unique_ptr<std::pair<size_t, bool>>> columnsWidth;
 	std::vector<std::string> header;
 	std::vector<std::unique_ptr<std::vector<std::unique_ptr<Cell>>>> data;
 
 public:
 	PageTable() = delete;
-	explicit PageTable(const std::string& title, const size_t rowCount, const size_t columnCount, HeaderOrientation headerOrientation = HeaderOrientation::NONE)
-		: headerOrientation(headerOrientation), title(title), columnsForPage(4) {
+	explicit PageTable(const std::string& title, const size_t rowCount, const size_t columnCount, const HeaderOrientation headerOrientation = HeaderOrientation::NONE)
+		: headerOrientation(headerOrientation), columnsForPage(4), title(title) {
 		setRowCount(rowCount);
 		setColumnCount(columnCount);
 	}
-	explicit PageTable(const std::string& title, const HeaderOrientation headerOrientation = HeaderOrientation::NONE) : PageTable("", 0, 0, headerOrientation) {}
+	explicit PageTable(const std::string& title, const HeaderOrientation headerOrientation = HeaderOrientation::NONE) : PageTable(title, 0, 0, headerOrientation) {}
 	explicit PageTable(const size_t rowCount, const size_t columnCount) : PageTable("", rowCount, columnCount) {}
+	~PageTable() {
+		title.clear();
+		columnsWidth.clear();
+		header.clear();
+		for (auto& r : data)
+			r->clear();
+		data.clear();
+	}
 
 	void addHeader(const std::initializer_list<std::string>& header) {
 		if (headerOrientation == HeaderOrientation::NONE)
@@ -117,14 +124,16 @@ public:
 	}
 
 	void updateHeaderAt(const size_t index, const std::string& value) {
+		if (headerOrientation == HeaderOrientation::NONE)
+			return;
+
 		if (headerOrientation == HeaderOrientation::COLUMN) {
 			if (index >= getColumnCount())
 				return;
 		} else if (headerOrientation == HeaderOrientation::ROW) {
 			if (index >= getRowCount())
 				return;
-		} else if (headerOrientation == HeaderOrientation::NONE)
-			return;
+		}
 
 		header[index] = value;
 		if (headerOrientation == HeaderOrientation::COLUMN)
@@ -269,10 +278,9 @@ public:
 			setColumnCount(getColumnCount());
 		else if (headerOrientation == HeaderOrientation::ROW)
 			setRowCount(getRowCount());
+		else
+			header.clear();
 	}
-
-	const std::string getTitle() const { return title; }
-	void setTitle(const std::string& title) { this->title = title; }
 
 	const unsigned short getColumnsForPage() const { return columnsForPage; }
 	void setColumnsForPage(unsigned short columns) {
@@ -280,6 +288,9 @@ public:
 			columns = 3;
 		columnsForPage = columns;
 	}
+
+	const std::string getTitle() const { return title; }
+	void setTitle(const std::string& title) { this->title = title; }
 
 private:
 	void updateColumnWidth(const size_t index, const size_t width, const bool force = false) {
@@ -322,7 +333,7 @@ private:
 	}
 
 	void printPage(const unsigned short page) {
-		const size_t columnBegin = page * columnsForPage;
+		const size_t columnBegin = static_cast<size_t>(page) * columnsForPage;
 		const size_t columnEnd = std::min(columnBegin + columnsForPage, getColumnCount());
 		const size_t columnCount = columnEnd - columnBegin;
 
