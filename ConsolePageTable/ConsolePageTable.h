@@ -162,6 +162,17 @@ public:
 		}
 	}
 
+	// the requirements remain to be confirmed
+	template<typename Iterator>
+	void addRow(Iterator begin, const Iterator end) {
+		setRowCount(getRowCount() + 1);
+		const size_t columnCount = getColumnCount();
+		for (size_t i = 0; i < columnCount && begin != end; ++i, ++begin) {
+			*data.back()->at(i) = *begin;
+			updateColumnWidth(i + 1, data.back()->at(i)->text.size());
+		}
+	}
+
 	template<typename T>
 	void addColumn(const std::initializer_list<T>& column) requires std::integral<T> || std::floating_point<T> || std::same_as<T, const char*> {
 		setColumnCount(getColumnCount() + 1);
@@ -178,6 +189,17 @@ public:
 		const size_t rowCount = std::min(getRowCount(), size);
 		for (size_t i = 0; i < rowCount; ++i) {
 			*data.at(i)->back() = column[i];
+			updateColumnWidth(getColumnCount(), data.at(i)->back()->text.size());
+		}
+	}
+
+	// the requirements remain to be confirmed
+	template<typename Iterator>
+	void addColumn(Iterator begin, const Iterator end) {
+		setColumnCount(getColumnCount() + 1);
+		const size_t rowCount = getRowCount();
+		for (size_t i = 0; i < rowCount && begin != end; ++i, ++begin) {
+			*data.at(i)->back() = *begin;
 			updateColumnWidth(getColumnCount(), data.at(i)->back()->text.size());
 		}
 	}
