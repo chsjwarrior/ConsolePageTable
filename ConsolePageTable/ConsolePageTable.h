@@ -96,8 +96,7 @@ public:
 		}
 
 		const size_t oldSize = i;
-		i = 0;
-		for (auto& value : header) {
+		for (i = 0; auto & value : header) {
 			this->header[oldSize + i] = value;
 			++i;
 			if (headerOrientation == HeaderOrientation::COLUMN)
@@ -328,16 +327,16 @@ private:
 			std::cout << caracter;
 	}
 
-	void printLine(const size_t begin, const size_t end, const Line line) const {
+	void printLine(size_t begin, const size_t end, const Line line) const {
 		std::cout << line.left;
 		if (headerOrientation == HeaderOrientation::ROW) {
 			repeat(border.horizontal, columnsWidth.front()->first);
 			std::cout << line.middle;
 		}
 		//if (begin != end)
-		for (size_t i = begin; i < end; ++i) {
-			repeat(border.horizontal, columnsWidth[i + 1]->first);
-			if (i < end - 1)
+		for (; begin < end; ++begin) {
+			repeat(border.horizontal, columnsWidth[begin + 1]->first);
+			if (begin < end - 1)
 				std::cout << line.middle;
 		}// else
 			//repeat(border.horizontal, tableWidth);
