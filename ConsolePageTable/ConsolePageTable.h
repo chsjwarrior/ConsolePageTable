@@ -148,11 +148,11 @@ public:
 		}
 	}
 
-	const size_t getColumnCount() const;
+	size_t getColumnCount() const;
 
 	void setColumnCount(const size_t columns);
 
-	const size_t getRowCount() const;
+	size_t getRowCount() const;
 
 	void setRowCount(const size_t rows);
 
@@ -162,10 +162,10 @@ public:
 
 	void print();
 
-	const HeaderOrientation getHeaderOrientation() const;
+	HeaderOrientation getHeaderOrientation() const;
 	void setHeaderOrientation(const HeaderOrientation headerOrientation);
 
-	const unsigned short getColumnsForPage() const;
+	unsigned short getColumnsForPage() const;
 	void setColumnsForPage(unsigned short columns);
 
 	const std::string getTitle() const;

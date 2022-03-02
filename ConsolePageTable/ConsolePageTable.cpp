@@ -80,7 +80,7 @@ void PageTable::updateHeaderAt(const size_t index, const std::string& value) {
 //addRow
 //addColumn
 
-const size_t PageTable::getColumnCount() const {
+size_t PageTable::getColumnCount() const {
 	if (columnsWidth.empty())
 		return 0;
 	return columnsWidth.size() - 1;
@@ -110,7 +110,7 @@ void PageTable::setColumnCount(const size_t columns) {
 	}
 }
 
-const size_t PageTable::getRowCount() const {
+ size_t PageTable::getRowCount() const {
 	return data.size();
 }
 
@@ -161,7 +161,7 @@ void PageTable::print() {
 	}
 }
 
-const PageTable::HeaderOrientation PageTable::getHeaderOrientation() const { return headerOrientation; }
+PageTable::HeaderOrientation PageTable::getHeaderOrientation() const { return headerOrientation; }
 void PageTable::setHeaderOrientation(const HeaderOrientation headerOrientation) {
 	this->headerOrientation = headerOrientation;
 	if (headerOrientation == HeaderOrientation::COLUMN)
@@ -172,7 +172,7 @@ void PageTable::setHeaderOrientation(const HeaderOrientation headerOrientation) 
 		header.clear();
 }
 
-const unsigned short PageTable::getColumnsForPage() const { return columnsForPage; }
+unsigned short PageTable::getColumnsForPage() const { return columnsForPage; }
 void PageTable::setColumnsForPage(unsigned short columns) {
 	if (columns < 3)
 		columns = 3;
@@ -190,7 +190,7 @@ void PageTable::updateColumnWidth(const size_t index, const size_t width, const 
 			columnsWidth[index]->first = std::max(columnsWidth[index]->first, width);
 }
 
-inline void PageTable::repeat(const unsigned char caracter, const size_t times) const {
+void PageTable::repeat(const unsigned char caracter, const size_t times) const {
 	for (size_t i = 0; i < times; ++i)
 		std::cout << caracter;
 }
